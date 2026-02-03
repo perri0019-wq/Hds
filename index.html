@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>BOOM 💣</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+body {
+  margin: 0;
+  background: #f4f6ff;
+}
+
+/* ===== HEADER ===== */
+.header {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background: white;
+}
+
+.avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #ddd;
+}
+
+.balance {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  background: #eef1ff;
+  padding: 8px 14px;
+  border-radius: 20px;
+}
+
+.coin-icon {
+  width: 26px;
+  height: 26px;
+  margin-right: 6px;
+}
+
+/* ===== MENU ===== */
+.menu {
+  padding: 20px;
+}
+
+.bomb-btn {
+  width: 100%;
+  padding: 16px;
+  background: #4c6fff;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 18px;
+}
+
+/* ===== GAME ===== */
+.game {
+  display: none;
+  padding: 20px;
+}
+
+.win-info {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+.cell {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+
+.controls {
+  margin-top: 15px;
+}
+
+.bet-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.bet-row {
+  display: flex;
+  gap: 6px;
+}
+
+.bet-row input {
+  flex: 1;
+  text-align: center;
+  font-size: 16px;
+}
+
+.bet-row button {
+  padding: 8px 12px;
+}
+
+.play-btn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 14px;
+  background: #4c6fff;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 18px;
+}
+
+.slider {
+  margin-top: 12px;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  width: 26px;
+  height: 26px;
+  background: white;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="avatar"></div>
+
+  <div class="balance">
+    <img src="coin.png" class="coin-icon">
+    <span id="balance">1000</span>
+  </div>
+</div>
+
+<!-- MENU -->
+<div class="menu" id="menu">
+  <button class="bomb-btn" onclick="startGame()">💣 bomb</button>
+</div>
+
+<!-- GAME -->
+<div class="game" id="game">
+
+  <div class="win-info">
+    Возможный выигрыш: 
+    <img src="coin.png" class="coin-icon">
+    <span id="possibleWin">0</span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="controls">
+    <div class="bet-title">
+      <img src="coin.png" class="coin-icon">
+      <span>Ставка</span>
+    </div>
+
+    <div class="bet-row">
+      <button onclick="halfBet()">½</button>
+      <input type="number" id="bet" value="1" min="1">
+      <button onclick="doubleBet()">2x</button>
+    </div>
+
+    <div class="slider">
+      Бомб: <span id="bombCount">3</span>
+      <input type="range" min="2" max="10" value="3" oninput="updateBombs(this.value)">
+    </div>
+
+    <button class="play-btn" onclick="play()">Играть</button>
+  </div>
+
+</div>
+
+<script>
+let balance = 1000;
+let bombs = [];
+let opened = 0;
+let playing = false;
+
+const grid = document.getElementById('grid');
+
+function startGame() {
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('game').style.display = 'block';
+}
+
+function updateBombs(v) {
+  document.getElementById('bombCount').innerText = v;
+}
+
+function halfBet() {
+  const bet = document.getElementById('bet');
+  bet.value = Math.max(1, Math.floor(bet.value / 2));
+}
+
+function doubleBet() {
+  const bet = document.getElementById('bet');
+  bet.value = Math.min(balance, bet.value * 2);
+}
+
+function play() {
+  if (playing) return;
+
+  const bet = Number(document.getElementById('bet').value);
+  if (bet < 1 || bet > balance) return;
+
+  playing = true;
+  opened = 0;
+  grid.innerHTML = '';
+  bombs = [];
+
+  const bombCount = Number(document.getElementById('bombCount').innerText);
+  while (bombs.length < bombCount) {
+    const r = Math.floor(Math.random() * 25);
+    if (!bombs.includes(r)) bombs.push(r);
+  }
+
+  for (let i = 0; i < 25; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.onclick = () => openCell(cell, i);
+    grid.appendChild(cell);
+  }
+}
+
+function openCell(cell, i) {
+  if (!playing || cell.innerHTML) return;
+
+  if (bombs.includes(i)) {
+    cell.innerHTML = '💣';
+    playing = false;
+    alert('Вы проиграли');
+  } else {
+    cell.innerHTML = `<img src="coin.png" width="22">`;
+    opened++;
+    document.getElementById('possibleWin').innerText = opened * document.getElementById('bet').value;
+  }
+}
+</script>
+
+</body>
+</html>
